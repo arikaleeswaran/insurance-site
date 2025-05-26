@@ -9,10 +9,15 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
-      - "3307:3306"
+      - "3307:3306"      
     volumes:
       - db-data:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   backend:
     build: ./backend
@@ -21,9 +26,11 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
-      DB_HOST: ${DB_HOST}
+      DB_HOST: mysql      
+      DB_PORT: 3306       
       DB_USER: ${DB_USER}
       DB_PASS: ${DB_PASS}
       DB_NAME: ${DB_NAME}
@@ -35,9 +42,57 @@ services:
     container_name: insurance-client
     restart: always
     ports:
-      - "3000:3000"
+      - "5173:5173"
     depends_on:
       - backend
 
 volumes:
   db-data:
+
+# This is old one...
+
+# version: '3.8'
+
+# services:
+#   mysql:
+#     image: mysql:8
+#     container_name: mysql-db
+#     restart: always
+#     environment:
+#       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+#       MYSQL_DATABASE: ${MYSQL_DATABASE}
+#     ports:
+#       - "3307:3306"
+#     volumes:
+#       - db-data:/var/lib/mysql
+#       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+#   backend:
+#     build: ./backend
+#     container_name: insurance-backend
+#     restart: always
+#     ports:
+#       - "5000:5000"
+#     depends_on:
+#       - mysql
+#     environment:
+#       DB_HOST: ${DB_HOST}
+#       DB_USER: ${DB_USER}
+#       DB_PASS: ${DB_PASS}
+#       DB_NAME: ${DB_NAME}
+#     env_file:
+#       - .env
+
+#   client:
+#     build: ./client
+#     container_name: insurance-client
+#     restart: always
+#     ports:
+#       - "3000:3000"
+#     depends_on:
+#       - backend
+
+# volumes:
+#   db-data:
+
+
