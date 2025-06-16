@@ -16,6 +16,14 @@ const db = mysql.createConnection({
   database: process.env.DB_NAME,
 });
 
+ db.connect(err =>{
+        if(err){
+            console.log(err);
+            return err;
+        } 
+        console.log("DB connected.....");  
+        res.status(200).send("DB started.....!");
+    });
 
 app.post('/api/caruser',(req,res)=>{
     console.log("data ",req.body);
@@ -24,20 +32,12 @@ app.post('/api/caruser',(req,res)=>{
 
     const sql = 'INSERT INTO car_users(id,name,age,mail,phone,vehicleNo,brand,insurance_id) VALUES(?,?,?,?,?,?,?,?)';
 
-    db.connect(err =>{
-        if(err){
-            console.log(err);
-            return err;
-        } 
-        console.log("DB connected.....");  
-    });
-
     db.query(sql,[id,name,age,mail,phone,vehicleNo,brand,insurance_id],(err,result)=>{
         if(err){
             console.error("hey nanba error inserting...",err);
             return res.status(500).send('Server Error')
         }
-        res.send(200).send("Inserted successfully!");
+        res.status(200).send("Inserted successfully!");
     });
 })
 
@@ -47,20 +47,13 @@ app.post('/api/user',(req,res)=>{
 
     const sql = 'INSERT INTO users(id,name,age,mail,phone,insurance_id) VALUES(?,?,?,?,?,?)';
 
-    db.connect(err =>{
-        if(err){
-            console.log(err);
-            return err;
-        } 
-        console.log("DB connected.....");  
-    });
-
     db.query(sql,[id,name,age,mail,phone,insurance_id],(err,response)=>{
         if(err){
             console.error("Hey error da.. enna nu paru..",err);
             return res.status(500).send("Server Error");
         }
         res.status(200).send("Inserted successfully!")
+        res.status(200).send("DB started.....!");
     })
 })
 
@@ -69,14 +62,6 @@ app.get('/api/all-insurance',(req,res)=>{
     UNION 
     select insurance_id,name,age,mail,phone, '' As extra1, '' As extra2 from users`;
 
-    db.connect(err =>{
-        if(err){
-            console.log(err);
-            return err;
-        } 
-        console.log("DB connected.....");  
-    });
-    
     db.query(sql,(err,result)=>{
         if(err){
             console.error("Error fetching insurances: ",err);
@@ -89,6 +74,5 @@ app.get('/api/all-insurance',(req,res)=>{
 
 app.listen(5000,()=>{
     console.log("Server running buddy!");
-    
 })
 
